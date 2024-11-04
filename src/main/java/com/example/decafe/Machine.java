@@ -1,5 +1,7 @@
 package com.example.decafe;
 
+import com.example.decafe.util.ImageUtil;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -11,56 +13,60 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.Timer;
 import java.util.TimerTask;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
 
 // Class used to control all the methods needed to operate a Machine
 public class Machine {
-    private int duration; // The duration that is needed to produce a product - How long does it take to produce something?
-    private Boolean produced; // Boolean that says if a product was already produced of if it needs to be produced
-    private final String filenameImageMachineWithoutProduct; // Image of the Machine in the default state
-    private final String filenameImageMachineWithProduct; // Image of the Machine with a product already produced
-    private final String productType; // The type of the Machine (cake or coffee)
+    
+    private static class Product {
+        private static final String NONE   = "none";
+        private static final String CAKE   = "cake";
+        private static final String COFFEE = "coffee";
+    }
+
+    // The duration that is needed to produce a product - How long does it take to produce something?
+    private int duration;
+
+    // Boolean that says if a product was already produced of if it needs to be produced
+    private Boolean produced;
+
+    // Image of the Machine in the default state
+    private final String filenameImageMachineWithoutProduct;
+
+    // Image of the Machine with a product already produced
+    private final String filenameImageMachineWithProduct;
+
+    // The type of the Machine (cake or coffee)
+    private final String productType;
 
     // Constructor
-    public Machine(int duration, String filenameImageMachineWithProduct, String filenameImageMachineWithoutProduct, String productType){
+    public Machine(int duration,
+                   String filenameImageMachineWithProduct,
+                   String filenameImageMachineWithoutProduct,
+                   String productType) {
+
         this.duration = duration;
         this.produced = false;
         this.filenameImageMachineWithProduct = filenameImageMachineWithProduct;
         this.filenameImageMachineWithoutProduct = filenameImageMachineWithoutProduct;
         this.productType = productType;
     }
-    //Getter
-    public int getDuration() { return duration; }
-
-    public Boolean getProduced() { return produced; }
-
-    //Setter
-    public void setDuration(int duration) { this.duration = duration; }
-
-    public void setProduced(Boolean produced){ this.produced = produced; }
-
-    // Method used to create an Image Object
-    public Image createImage(String filename) throws FileNotFoundException {
-        File f = new File(""); // Get filepath of project
-        // Get path to certain Image
-        String filePath = f.getAbsolutePath() + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "com" + File.separator + "example" + File.separator + "decafe" + File.separator + filename;
-        InputStream stream = new FileInputStream(filePath); // Convert path into stream
-        return new Image(stream); // Convert stream to Image and return it
-    }
 
     // Method used to animate the progressbar above the Machine
-    public void doProgressBarAnimation(Timer productionTimer, ImageView machineImageView, ProgressBar machineProgressBar, Image imageProductProduced){
+    public void doProgressBarAnimation(
+            Timer productionTimer,
+            ImageView machineImageView,
+            ProgressBar machineProgressBar,
+            Image imageProductProduced) {
+
         // During the Animation the Player should not be able to click the machine therefore disable it
         machineImageView.setDisable(true);
+
         // The Progressbar gets shown
         machineProgressBar.setVisible(true);
+
         // For the animation is used a code from Stackoverflow and modified it a bit
         // code from https://stackoverflow.com/questions/18539642/progressbar-animated-javafx
         // create a new Timeline task
@@ -76,10 +82,13 @@ public class Machine {
                         new KeyValue(machineProgressBar.progressProperty(), 1)
                 )
         );
+
         // Set the maxStatus
         int maxStatus = 12;
+
         // Create the Property that holds the current status count
         IntegerProperty statusCountProperty = new SimpleIntegerProperty(1);
+
         // Create the timeline that loops the statusCount till the maxStatus
         Timeline timelineBar = new Timeline(
                 new KeyFrame(
@@ -88,18 +97,27 @@ public class Machine {
                         new KeyValue(statusCountProperty, maxStatus)
                 )
         );
+
         // The animation should be infinite
         timelineBar.setCycleCount(Timeline.INDEFINITE);
+
         // play the timeline
         timelineBar.play();
+
         // Add a listener to the status property
         statusCountProperty.addListener((ov, statusOld, statusNewNumber) -> {
+
             int statusNew = statusNewNumber.intValue();
+
             // Remove old status pseudo from progress-bar
-            machineProgressBar.pseudoClassStateChanged(PseudoClass.getPseudoClass("status" + statusOld.intValue()), false);
+            machineProgressBar.pseudoClassStateChanged(
+                    PseudoClass.getPseudoClass("status" + statusOld.intValue()), false);
+
             // Add current status pseudo from progress-bar
-            machineProgressBar.pseudoClassStateChanged(PseudoClass.getPseudoClass("status" + statusNew), true);
+            machineProgressBar.pseudoClassStateChanged(
+                    PseudoClass.getPseudoClass("status" + statusNew), true);
         });
+
         task.playFromStart();
 
         // Schedule how long the animation should go
@@ -108,84 +126,122 @@ public class Machine {
                 new TimerTask() {
                     @Override
                     public void run() {
+
                         // After a certain time was reached change the Image of the Machine
                         machineImageView.setImage(imageProductProduced);
+
                         // And make the Machine clickable again
                         machineImageView.setDisable(false);
+
                         // And stop all timers
                         task.stop();
                         timelineBar.stop();
                         productionTimer.cancel();
                     }
                 },
-                this.duration* 1000L
+                this.duration * 1000L
         );
     }
 
     // Method to display a Product / change the state of a Machine
-    public void displayProduct (ImageView waiterImageView, ImageView machineImageView, Player cofiBrew, ProgressBar machineProgressBar) throws FileNotFoundException {
+    public void displayProduct(
+            ImageView waiterImageView,
+            ImageView machineImageView,
+            Player cofiBrew,
+            ProgressBar machineProgressBar
+    ) throws FileNotFoundException {
+
         // create new Timer object
         Timer productionTimer = new Timer();
+
         // Set default image of Waiter and Machine
         String imageMachine = this.filenameImageMachineWithProduct;
         String imageCofi = cofiBrew.getFilenameImageWithoutProduct();
+
         // Set boolean got produced to false - used to check if a product was produced when clicked on Machine
         boolean gotProduced = false;
 
-        if (!this.produced && cofiBrew.getProductInHand().equals("none")) { // If Machine hasn't produced something and the waiter has nothing in his hands
-            // Set both booleans to produced
+        if (!this.produced) {
+
             this.setProduced(true);
             gotProduced = true;
-        } else if (!this.produced && cofiBrew.getProductInHand().equals("coffee")) { // If machine hasn't produced anything and the waiter has coffee in his hands
-            // Set both booleans to produced
-            this.setProduced(true);
-            gotProduced = true;
-            // Change Image to waiter with Coffee (since it's not the same as the default)
-            imageCofi = cofiBrew.getFilenameImageWithCoffee();
-        } else if (!this.produced && cofiBrew.getProductInHand().equals("cake")) { // If machine hasn't produced anything and the waiter has cake in his hands
-            // Set both booleans to produced
-            this.setProduced(true);
-            gotProduced = true;
-            // Change Image to waiter with Cake (since it's not the same as the default)
-            imageCofi = cofiBrew.getFilenameImageWithCake();
-        } else { // If something was already produced
-            if (cofiBrew.getProductInHand().equals("none")){ // And the waiter hasn't anything in his hands
+
+            var productInHand = cofiBrew.getProductInHand();
+
+            imageCofi = (productInHand.equals(Product.COFFEE))
+                    ? cofiBrew.getFilenameImageWithCoffee()
+                    : (productInHand.equals(Product.CAKE))
+                    ? cofiBrew.getFilenameImageWithCake()
+                    : imageCofi;
+
+        } else {
+
+            // And the waiter hasn't anything in his hands
+            if (cofiBrew.getProductInHand().equals(Product.NONE)) {
+
                 // Set produced boolean to false since nothing was produces
                 this.setProduced(false);
+
                 // Change Image to Machine without product (since product was taken)
                 imageMachine = this.filenameImageMachineWithoutProduct;
+
                 // Set the product the player obtain to whatever type the machine is
                 cofiBrew.setProductInHand(this.productType);
-                if (this.productType.equals("coffee")){ // If the type of the machine is coffee
-                    // Change the images of the waiter, so he holds coffee
-                    imageCofi = cofiBrew.getFilenameImageWithCoffee();
-                } else { // If the type of the machine is cake
-                    // Change the images of the waiter, so he holds cake
-                    imageCofi = cofiBrew.getFilenameImageWithCake();
-                }
-            } else { // If coffee Brew has something in his hands (so he can't pick up the product produced)
-                    // Keep the picture the same
-                    if (cofiBrew.getProductInHand().equals("coffee")){ // So if he holds coffee at the moment
-                        // Set Image to waiter with coffee
-                        imageCofi = cofiBrew.getFilenameImageWithCoffee();
-                    } else { // If he holds cake at the moment
-                        // Set Image to waiter with cake
-                        imageCofi = cofiBrew.getFilenameImageWithCake();
-                    }
+
+                imageCofi = (this.productType.equals(Product.COFFEE))
+                        ? cofiBrew.getFilenameImageWithCoffee()
+                        : cofiBrew.getFilenameImageWithCake();
+
+            } else {
+
+                imageCofi = (cofiBrew.getProductInHand().equals(Product.COFFEE))
+                        ? cofiBrew.getFilenameImageWithCoffee()
+                        : cofiBrew.getFilenameImageWithCake();
             }
         }
-        // Set the waiter Image to whatever images was chosen above
-        waiterImageView.setImage(createImage(imageCofi));
 
-        if (gotProduced) { // If something was produced
+        // Set the waiter Image to whatever images was chosen above
+        waiterImageView.setImage(ImageUtil.getImageFromResources(imageCofi));
+
+        // If something was produced
+        if (gotProduced) {
+
             // Animate the progress bar and wait till the product gets produced
-            doProgressBarAnimation(productionTimer, machineImageView, machineProgressBar, createImage(imageMachine));
-        } else { // If nothing was produced
+            doProgressBarAnimation(
+                    productionTimer,
+                    machineImageView,
+                    machineProgressBar,
+                    ImageUtil.getImageFromResources(imageMachine)
+            );
+
+        // If nothing was produced
+        } else {
+
             // Make the progress bar visible if something was produced and if not so set it invisible
             machineProgressBar.setVisible(this.getProduced());
+
             // Set the machine Image to whatever images was chosen above
-            machineImageView.setImage(createImage(imageMachine));
+            machineImageView.setImage(ImageUtil.getImageFromResources(imageMachine));
         }
     }
 
+    // Getter
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public Boolean getProduced() {
+        return produced;
+    }
+
+    // Setter
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    public void setProduced(Boolean produced) {
+        this.produced = produced;
+    }
 }
