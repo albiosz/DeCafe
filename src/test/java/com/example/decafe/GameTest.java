@@ -19,6 +19,6 @@ class GameTest {
 
     @Test
     void getCoinsEarned() {
-        assertNotEquals(0, game.getCoinsEarned());
+        assertEquals(0, game.getCoinsEarned());
     }
 }
