@@ -13,7 +13,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 
-import java.io.FileNotFoundException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -90,13 +89,7 @@ public class Machine {
         IntegerProperty statusCountProperty = new SimpleIntegerProperty(1);
 
         // Create the timeline that loops the statusCount till the maxStatus
-        Timeline timelineBar = new Timeline(
-                new KeyFrame(
-                        // Set this value for the speed of the animation
-                        Duration.millis(300),
-                        new KeyValue(statusCountProperty, maxStatus)
-                )
-        );
+        Timeline timelineBar = getTimelineBar(statusCountProperty, maxStatus);
 
         // The animation should be infinite
         timelineBar.setCycleCount(Timeline.INDEFINITE);
@@ -143,13 +136,23 @@ public class Machine {
         );
     }
 
+    private static Timeline getTimelineBar(IntegerProperty statusCountProperty, int maxStatus) {
+        // Set this value for the speed of the animation
+        return new Timeline(
+                new KeyFrame(
+                        // Set this value for the speed of the animation
+                        Duration.millis(300),
+                        new KeyValue(statusCountProperty, maxStatus)
+                )
+        );
+    }
+
     // Method to display a Product / change the state of a Machine
     public void displayProduct(
             ImageView waiterImageView,
             ImageView machineImageView,
             Player cofiBrew,
-            ProgressBar machineProgressBar
-    ) throws FileNotFoundException {
+            ProgressBar machineProgressBar) {
 
         // create new Timer object
         Timer productionTimer = new Timer();
