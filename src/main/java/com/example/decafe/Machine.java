@@ -1,5 +1,7 @@
 package com.example.decafe;
 
+import static javafx.animation.Timeline.INDEFINITE;
+
 import com.example.decafe.util.ImageUtil;
 
 import javafx.animation.KeyFrame;
@@ -29,7 +31,7 @@ public class Machine {
     private int duration;
 
     // Boolean that says if a product was already produced of if it needs to be produced
-    private Boolean produced;
+    private boolean produced;
 
     // Image of the Machine in the default state
     private final String filenameImageMachineWithoutProduct;
@@ -92,7 +94,7 @@ public class Machine {
         Timeline timelineBar = getTimelineBar(statusCountProperty, maxStatus);
 
         // The animation should be infinite
-        timelineBar.setCycleCount(Timeline.INDEFINITE);
+        timelineBar.setCycleCount(INDEFINITE);
 
         // play the timeline
         timelineBar.play();
@@ -147,85 +149,73 @@ public class Machine {
         );
     }
 
-    // Method to display a Product / change the state of a Machine
-    public void displayProduct(
-            ImageView waiterImageView,
-            ImageView machineImageView,
-            Player cofiBrew,
-            ProgressBar machineProgressBar) {
+    public void displayProduct(ImageView waiterImageView,
+                               ImageView machineImageView,
+                               Player cofiBrew,
+                               ProgressBar machineProgressBar) {
 
-        // create new Timer object
-        Timer productionTimer = new Timer();
-
-        // Set default image of Waiter and Machine
         String imageMachine = this.filenameImageMachineWithProduct;
-        String imageCofi = cofiBrew.getFilenameImageWithoutProduct();
 
-        // Set boolean got produced to false - used to check if a product was produced when clicked on Machine
-        boolean gotProduced = false;
+        String imageCofi = (this.produced)
+            ? handleProduced(cofiBrew, imageMachine, machineImageView, machineProgressBar)
+            : handleNotProduced(cofiBrew, imageMachine, machineImageView, machineProgressBar);
 
-        if (!this.produced) {
-
-            this.setProduced(true);
-            gotProduced = true;
-
-            var productInHand = cofiBrew.getProductInHand();
-
-            imageCofi = (productInHand.equals(Product.COFFEE))
-                    ? cofiBrew.getFilenameImageWithCoffee()
-                    : (productInHand.equals(Product.CAKE))
-                    ? cofiBrew.getFilenameImageWithCake()
-                    : imageCofi;
-
-        } else {
-
-            // And the waiter hasn't anything in his hands
-            if (cofiBrew.getProductInHand().equals(Product.NONE)) {
-
-                // Set produced boolean to false since nothing was produces
-                this.setProduced(false);
-
-                // Change Image to Machine without product (since product was taken)
-                imageMachine = this.filenameImageMachineWithoutProduct;
-
-                // Set the product the player obtain to whatever type the machine is
-                cofiBrew.setProductInHand(this.productType);
-
-                imageCofi = (this.productType.equals(Product.COFFEE))
-                        ? cofiBrew.getFilenameImageWithCoffee()
-                        : cofiBrew.getFilenameImageWithCake();
-
-            } else {
-
-                imageCofi = (cofiBrew.getProductInHand().equals(Product.COFFEE))
-                        ? cofiBrew.getFilenameImageWithCoffee()
-                        : cofiBrew.getFilenameImageWithCake();
-            }
-        }
-
-        // Set the waiter Image to whatever images was chosen above
         waiterImageView.setImage(ImageUtil.getImageFromResources(imageCofi));
+    }
 
-        // If something was produced
-        if (gotProduced) {
+    private String handleNotProduced(Player cofiBrew,
+                                     String imageMachine,
+                                     ImageView machineImageView,
+                                     ProgressBar machineProgressBar) {
 
-            // Animate the progress bar and wait till the product gets produced
-            doProgressBarAnimation(
-                    productionTimer,
-                    machineImageView,
-                    machineProgressBar,
-                    ImageUtil.getImageFromResources(imageMachine)
-            );
+        this.setProduced(true);
 
-        // If nothing was produced
+        var productInHand = cofiBrew.getProductInHand();
+
+        doProgressBarAnimation(
+                new Timer(),
+                machineImageView,
+                machineProgressBar,
+                ImageUtil.getImageFromResources(imageMachine)
+        );
+
+        return switch (productInHand) {
+            case Product.COFFEE -> cofiBrew.getFilenameImageWithCoffee();
+            case Product.CAKE   -> cofiBrew.getFilenameImageWithCake();
+            default             -> cofiBrew.getFilenameImageWithoutProduct();
+        };
+    }
+
+    private String handleProduced(Player cofiBrew,
+                                  String imageMachine,
+                                  ImageView machineImageView,
+                                  ProgressBar machineProgressBar) {
+
+        String imageCofi;
+
+        if (cofiBrew.getProductInHand().equals(Product.NONE)) {
+
+            this.setProduced(false);
+
+            imageMachine = this.filenameImageMachineWithoutProduct;
+
+            cofiBrew.setProductInHand(this.productType);
+
+            imageCofi = (this.productType.equals(Product.COFFEE))
+                    ? cofiBrew.getFilenameImageWithCoffee()
+                    : cofiBrew.getFilenameImageWithCake();
+
         } else {
 
-            // Make the progress bar visible if something was produced and if not so set it invisible
-            machineProgressBar.setVisible(this.getProduced());
-
-            // Set the machine Image to whatever images was chosen above
-            machineImageView.setImage(ImageUtil.getImageFromResources(imageMachine));
+            imageCofi = (cofiBrew.getProductInHand().equals(Product.COFFEE))
+                    ? cofiBrew.getFilenameImageWithCoffee()
+                    : cofiBrew.getFilenameImageWithCake();
         }
+
+        machineProgressBar.setVisible(this.getProduced());
+        machineImageView.setImage(ImageUtil.getImageFromResources(imageMachine));
+
+        return imageCofi;
     }
 
     // Getter
@@ -244,7 +234,7 @@ public class Machine {
         this.duration = duration;
     }
 
-    public void setProduced(Boolean produced) {
+    public void setProduced(boolean produced) {
         this.produced = produced;
     }
 }

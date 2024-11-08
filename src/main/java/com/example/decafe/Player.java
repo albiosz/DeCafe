@@ -63,4 +63,3 @@ public class Player {
         this.movementSpeed = movement;
     }
 }
-

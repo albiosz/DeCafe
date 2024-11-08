@@ -6,6 +6,8 @@ import java.util.Objects;
 
 public class ImageUtil {
 
+    private ImageUtil() {}
+
     // Method used to create an Image Object
     public static Image getImageFromResources(String fileName) {
 

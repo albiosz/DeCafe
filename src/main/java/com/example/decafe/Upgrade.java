@@ -3,13 +3,11 @@ package com.example.decafe;
 import com.example.decafe.util.ImageUtil;
 import javafx.scene.image.ImageView;
 
-import java.io.FileNotFoundException;
-
 // Function used to control all the methods used for Upgrades
 public class Upgrade {
 
     // The coins needed to use/do the Upgrade
-    private final int CoinsNeeded;
+    private final int coinsNeeded;
 
     // Boolean that indicates if the Upgrade was already used or not
     private boolean alreadyUsedOnce;
@@ -30,7 +28,7 @@ public class Upgrade {
             String filenameUpgradeUsed,
             ImageView upgradeImageView) {
 
-        this.CoinsNeeded = coinsNeeded;
+        this.coinsNeeded = coinsNeeded;
         this.alreadyUsedOnce = alreadyUsedOnce;
         this.filenameUpgradeNotUsed = filenameUpgradeNotUsed;
         this.filenameUpgradeUsed = filenameUpgradeUsed;
@@ -44,7 +42,7 @@ public class Upgrade {
     }
 
     public int getCoinsNeeded() {
-        return CoinsNeeded;
+        return coinsNeeded;
     }
 
     public String getFilenameUpgradeUsed() {
@@ -66,7 +64,7 @@ public class Upgrade {
     }
 
     // Method used to use an Upgrade
-    public int doUpgrades(int coins) throws FileNotFoundException {
+    public int doUpgrades(int coins) {
 
         // Change Image to the "deactivated" Upgrade Image
         this.upgradeImageView.setImage(ImageUtil.getImageFromResources(this.filenameUpgradeUsed));
