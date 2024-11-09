@@ -1,5 +1,6 @@
 package com.example.decafe;
 
+import com.example.decafe.exception.ImageNotFoundException;
 import com.example.decafe.util.ImageUtil;
 import javafx.scene.image.ImageView;
 
@@ -64,7 +65,7 @@ public class Upgrade {
     }
 
     // Method used to use an Upgrade
-    public int doUpgrades(int coins) {
+    public int doUpgrades(int coins) throws ImageNotFoundException {
 
         // Change Image to the "deactivated" Upgrade Image
         this.upgradeImageView.setImage(ImageUtil.getImageFromResources(this.filenameUpgradeUsed));

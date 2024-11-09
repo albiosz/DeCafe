@@ -1,9 +1,8 @@
 package com.example.decafe;
 
-import static javafx.animation.Timeline.INDEFINITE;
-
+import com.example.decafe.assets.CafeAssets;
+import com.example.decafe.exception.ImageNotFoundException;
 import com.example.decafe.util.ImageUtil;
-
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -18,14 +17,10 @@ import javafx.util.Duration;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static javafx.animation.Timeline.INDEFINITE;
+
 // Class used to control all the methods needed to operate a Machine
 public class Machine {
-    
-    private static class Product {
-        private static final String NONE   = "none";
-        private static final String CAKE   = "cake";
-        private static final String COFFEE = "coffee";
-    }
 
     // The duration that is needed to produce a product - How long does it take to produce something?
     private int duration;
@@ -152,13 +147,13 @@ public class Machine {
     public void displayProduct(ImageView waiterImageView,
                                ImageView machineImageView,
                                Player cofiBrew,
-                               ProgressBar machineProgressBar) {
+                               ProgressBar machineProgressBar) throws ImageNotFoundException {
 
         String imageMachine = this.filenameImageMachineWithProduct;
 
         String imageCofi = (this.produced)
-            ? handleProduced(cofiBrew, imageMachine, machineImageView, machineProgressBar)
-            : handleNotProduced(cofiBrew, imageMachine, machineImageView, machineProgressBar);
+                ? handleProduced(cofiBrew, imageMachine, machineImageView, machineProgressBar)
+                : handleNotProduced(cofiBrew, imageMachine, machineImageView, machineProgressBar);
 
         waiterImageView.setImage(ImageUtil.getImageFromResources(imageCofi));
     }
@@ -166,7 +161,7 @@ public class Machine {
     private String handleNotProduced(Player cofiBrew,
                                      String imageMachine,
                                      ImageView machineImageView,
-                                     ProgressBar machineProgressBar) {
+                                     ProgressBar machineProgressBar) throws ImageNotFoundException {
 
         this.setProduced(true);
 
@@ -179,21 +174,21 @@ public class Machine {
                 ImageUtil.getImageFromResources(imageMachine)
         );
 
-        return switch (productInHand) {
-            case Product.COFFEE -> cofiBrew.getFilenameImageWithCoffee();
-            case Product.CAKE   -> cofiBrew.getFilenameImageWithCake();
-            default             -> cofiBrew.getFilenameImageWithoutProduct();
+        return switch (CafeAssets.getValueOf(productInHand)) {
+            case COFFEE -> cofiBrew.getFilenameImageWithCoffee();
+            case CAKE -> cofiBrew.getFilenameImageWithCake();
+            default -> cofiBrew.getFilenameImageWithoutProduct();
         };
     }
 
     private String handleProduced(Player cofiBrew,
                                   String imageMachine,
                                   ImageView machineImageView,
-                                  ProgressBar machineProgressBar) {
+                                  ProgressBar machineProgressBar) throws ImageNotFoundException {
 
         String imageCofi;
 
-        if (cofiBrew.getProductInHand().equals(Product.NONE)) {
+        if (cofiBrew.getProductInHand().equals(CafeAssets.NONE.getName())) {
 
             this.setProduced(false);
 
@@ -201,13 +196,13 @@ public class Machine {
 
             cofiBrew.setProductInHand(this.productType);
 
-            imageCofi = (this.productType.equals(Product.COFFEE))
+            imageCofi = (this.productType.equals(CafeAssets.COFFEE.getName()))
                     ? cofiBrew.getFilenameImageWithCoffee()
                     : cofiBrew.getFilenameImageWithCake();
 
         } else {
 
-            imageCofi = (cofiBrew.getProductInHand().equals(Product.COFFEE))
+            imageCofi = (cofiBrew.getProductInHand().equals(CafeAssets.COFFEE.getName()))
                     ? cofiBrew.getFilenameImageWithCoffee()
                     : cofiBrew.getFilenameImageWithCake();
         }
