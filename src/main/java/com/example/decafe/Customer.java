@@ -8,7 +8,6 @@ import javafx.scene.media.AudioClip;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.*;
 
 public class Customer {
@@ -20,11 +19,8 @@ public class Customer {
     private static Timer controllerTimer; //timer for leaving, spawning
     private ImageView smiley; //picture of smiley for the mood of the customer
     private ImageView coinImage; //picture of the money the customer is leaving behind
-
     private boolean alreadyOrdered; //boolean to see if the customer has already ordered
-
     private CustomerMode mood;
-
     private boolean leftUnhappy = true; //boolean to see if customer has left unhappy (received wrong order or left after 60 secs)
 
     public static List<Customer> customersInCoffeeShop = new ArrayList<>(); //list with all customers that are in the café
@@ -58,7 +54,7 @@ public class Customer {
     }
 
     public static void addFreeSeat(int chairLeft) { //add chair number to the list when customer has left
-        Customer.freeChairs.add(chairLeft);
+        freeChairs.add(chairLeft);
     }
 
     public boolean isAlreadyOrdered() { //return if the customer has already ordered or not
@@ -81,17 +77,8 @@ public class Customer {
         return this.orderLabel;
     }
 
-    public String getRandomOrder() { //returns random order
-
-        Random random = new Random();
-        int number = random.nextInt(2);
-
-        switch (number) {
-            case 0 -> order = "cake";
-            case 1 -> order = "coffee";
-        }
-
-        return order;
+    public String getRandomOrder() {
+        return (order = new Random().nextBoolean() ? "cake" : "coffee");
     }
 
     public ImageView getCoinImage() { //returns the image of the coin
@@ -109,97 +96,51 @@ public class Customer {
 
     // Method used to create an Image Object
     public Image createImage(String filename) throws FileNotFoundException {
-        File f = new File(""); // Get filepath of project
-        // Get path to certain Image
-        String filePath = f.getAbsolutePath() + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "com" + File.separator + "example" + File.separator + "decafe" + File.separator + filename;
-        InputStream stream = new FileInputStream(filePath); // Convert path into stream
-        return new Image(stream); // Convert stream to Image and return it
+        String path = new File("").getAbsolutePath() + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "com" + File.separator + "example" + File.separator + "decafe" + File.separator + filename;
+        return new Image(new FileInputStream(path));
     }
 
     //Returns the appropriate image for the customer
     public static ImageView getImage(ImageView customer, ImageView[] searchArray) {
-        ImageView wantedImage = new ImageView();
-
-        if (customerImages[0].equals(customer)) {
-            wantedImage = searchArray[0];
-        } else if (customerImages[1].equals(customer)) {
-            wantedImage = searchArray[1];
-        } else if (customerImages[2].equals(customer)) {
-            wantedImage = searchArray[2];
-        } else if (customerImages[3].equals(customer)) {
-            wantedImage = searchArray[3];
-        } else if (customerImages[4].equals(customer)) {
-            wantedImage = searchArray[4];
-        } else if (customerImages[5].equals(customer)) {
-            wantedImage = searchArray[5];
-        } else if (customerImages[6].equals(customer)) {
-            wantedImage = searchArray[6];
+        for (int i = 0; i < customerImages.length; i++) {
+            if (customerImages[i].equals(customer)) return searchArray[i];
         }
-
-        return wantedImage;
+        return new ImageView();
     }
 
     //Returns the appropriate label for the customer
     public static ImageView getLabel(ImageView customer) {
-
-        ImageView customerOrder = new ImageView();
-
-        if (customerImages[0].equals(customer)) {
-            customerOrder = orderLabels[0];
-        } else if (customerImages[1].equals(customer)) {
-            customerOrder = orderLabels[1];
-        } else if (customerImages[2].equals(customer)) {
-            customerOrder = orderLabels[2];
-        } else if (customerImages[3].equals(customer)) {
-            customerOrder = orderLabels[3];
-        } else if (customerImages[4].equals(customer)) {
-            customerOrder = orderLabels[4];
-        } else if (customerImages[5].equals(customer)) {
-            customerOrder = orderLabels[5];
-        } else if (customerImages[6].equals(customer)) {
-            customerOrder = orderLabels[6];
+        for (int i = 0; i < customerImages.length; i++) {
+            if (customerImages[i].equals(customer)) return orderLabels[i];
         }
-
-        return customerOrder;
-
+        return new ImageView();
     }
 
     //Returns random customer picture
     public static ImageView getRandomPic() {
-        Random random = new Random();
-        int index = freeChairs.get(random.nextInt(freeChairs.size()));
+        int index = freeChairs.get(new Random().nextInt(freeChairs.size()));
         freeSeatChosen = index;
-
-        if (!freeChairs.contains(index)) { //when the customer is already visible make new random number
-            getRandomPic();
-        }
-
+        if (!freeChairs.contains(index)) getRandomPic();  //when the customer is already visible make new random number
         freeChairs.remove(Integer.valueOf(index)); //remove the number from the number list of chairs so there are no duplicates
-
         return customerImages[index];
     }
 
     //Methode to spawn customers
     public static void spawnCustomers() {
-        if (customersInCoffeeShop.size() < 3 && freeChairs.size() != 0) { //spawn a new customer this when under 3 customers are in the café
-            ImageView customerImage = getRandomPic(); //get random picture from Array
-            customerImage.setVisible(true); //make this picture visible
-
-            ImageView order = getLabel(customerImage); //get the label for the customer
-            ImageView smiley = getImage(customerImage, smileyImages); //gets the smiley picture for the customer
-            ImageView coin = getImage(customerImage, coinImages); //gets the coin picture for the customer
-
-
-            Customer customer = new Customer(customerImage, order, freeSeatChosen, smiley, coin); //make new customer object
-            customersInCoffeeShop.add(customer); //to check if not more than 3 customers are in the store
-            allCustomers.add(customer); //to stop all timers that are still alive even after customer has left
-            File f = new File("");
-            String musicFile = f.getAbsolutePath() + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "com" + File.separator + "example" + File.separator + "decafe" + File.separator + "doorBell.mp3";
-            AudioClip doorBell = new AudioClip(new File(musicFile).toURI().toString());
-            //MediaPlayer doorBell = new MediaPlayer(sound);
-            doorBell.play();
-            customer.waitingTime(); //place customer in the waitingTime of  60 seconds
+        if (customersInCoffeeShop.size() < 3 && !freeChairs.isEmpty()) {
+            ImageView customerImage = getRandomPic();
+            customerImage.setVisible(true);
+            Customer customer = new Customer(customerImage, getLabel(customerImage), freeSeatChosen, getImage(customerImage, smileyImages), getImage(customerImage, coinImages));
+            customersInCoffeeShop.add(customer);
+            allCustomers.add(customer);
+            playAudio("doorBell.mp3");
+            customer.waitingTime();
         }
+    }
+
+    private static void playAudio(String filename) {
+        String path = new File("").getAbsolutePath() + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "com" + File.separator + "example" + File.separator + "decafe" + File.separator + filename;
+        new AudioClip(new File(path).toURI().toString()).play();
     }
 
     //Timer to spawn the customers
@@ -218,8 +159,8 @@ public class Customer {
 
     //Methode for the timer when customer leaves
     public void startTimerLeave(Customer customer) {
-        this.orderLabel.setVisible(false);
-        this.smiley.setVisible(false);
+        orderLabel.setVisible(false);
+        smiley.setVisible(false);
         controllerTimer.schedule(
                 new TimerTask() {
                     @Override
@@ -239,45 +180,32 @@ public class Customer {
 
     //Methode for the general 60 seconds timer
     public void waitingTime() {
-        Customer customer = this;
         TimerTask timerTask = new TimerTask() {
             int seconds = 60;
 
             @Override
             public void run() {
-                seconds--;
-                if (seconds == 59) { //set green smiley when the customer has just spawned
-                    smiley.setVisible(true);
-                    try {
-                        smiley.setImage(createImage("smileygreen.png"));
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                    customer.setMood(CustomerMode.GREEN);
-                } else if (seconds == 30) { //set yellow smiley when the customer has just spawned
-                    smiley.setVisible(true);
-                    try {
-                        smiley.setImage(createImage("smileyyellow.png"));
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                    customer.setMood(CustomerMode.YELLOW);
-                } else if (seconds == 15) { //set red smiley when the customer has just spawned
-                    smiley.setVisible(true);
-                    try {
-                        smiley.setImage(createImage("smileyred.png"));
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                    customer.setMood(CustomerMode.RED);
-                } else if (seconds == 0) { //when the timer has finished - customer leaves
-                    startTimerLeave(customer);
+                seconds--; // increment after or before ?
+                if (seconds == 0) {
+                    startTimerLeave(Customer.this);
+                } else if (seconds == 59 || seconds == 30 || seconds == 15) {
+                    updateSmiley(seconds);
                 }
+
             }
         };
+        sixtySecondsTimer.schedule(timerTask, 0, 1000);
+    }
 
-        this.sixtySecondsTimer.schedule(timerTask, 0, 1000);//it should call this methode every second
-
+    private void updateSmiley(int seconds) {
+        try {
+            String imageName = seconds == 59 ? "smileygreen.png" : seconds == 30 ? "smileyyellow.png" : "smileyred.png";
+            smiley.setVisible(true);
+            smiley.setImage(createImage(imageName));
+            setMood(seconds == 59 ? CustomerMode.GREEN : seconds == 30 ? CustomerMode.YELLOW : CustomerMode.RED);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     //Methode to display order
@@ -337,29 +265,20 @@ public class Customer {
     //Methode for when the customer leaves
     public void leave(ImageView customerImage) throws FileNotFoundException {
         customerImage.setVisible(false);
-        customersInCoffeeShop.removeIf(customer -> customer.getImage().equals(customerImage)); //remove customer from customerList
-        this.coinImage.setVisible(true);
-        this.coinImage.setDisable(false);
-        if (this.leftUnhappy) { //when customer leaves after 60 seconds or received wrong order
-            File f = new File("");
-            String musicFile = f.getAbsolutePath() + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "com" + File.separator + "example" + File.separator + "decafe" + File.separator + "wrongChoice.mp3";
-            AudioClip wrongOrder = new AudioClip(new File(musicFile).toURI().toString());
-            //MediaPlayer collectMoney = new MediaPlayer(sound);
-            wrongOrder.play();
-            this.coinImage.setImage(this.createImage("coin.png")); // set coin Image to empty plate
-            this.coinImage.setOnMouseClicked(event1 -> { // set click event to this
+        customersInCoffeeShop.removeIf(customer -> customer.getImage().equals(customerImage));
+        coinImage.setVisible(true);
+        coinImage.setDisable(false);
+        playAudio(leftUnhappy ? "wrongChoice.mp3" : "rightChoice.mp3");
+
+        if (leftUnhappy) {
+            coinImage.setImage(createImage("coin.png"));
+            coinImage.setOnMouseClicked(event -> {
                 try {
                     noMoneySpent(this);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
             });
-        } else {
-            File f = new File("");
-            String musicFile = f.getAbsolutePath() + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "com" + File.separator + "example" + File.separator + "decafe" + File.separator + "rightChoice.mp3";
-            AudioClip rightOrder = new AudioClip(new File(musicFile).toURI().toString());
-            //MediaPlayer collectMoney = new MediaPlayer(sound);
-            rightOrder.play();
         }
     }
 
