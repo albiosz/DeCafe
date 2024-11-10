@@ -16,7 +16,7 @@ public class Player {
     private String productInHand;
 
     // the movement speed at which the waiter moves
-    private int movementSpeed;
+    private double velocity;
 
     // Constructor
     public Player(String filenameImageWithoutProduct,
@@ -28,7 +28,7 @@ public class Player {
         this.filenameImageWithCake = filenameImageWithCake;
         this.filenameImageWithCoffee = filenameImageWithCoffee;
         this.productInHand = "none";
-        this.movementSpeed = movement;
+        this.velocity = movement;
     }
 
     // Getter
@@ -49,8 +49,8 @@ public class Player {
         return filenameImageWithCoffee;
     }
 
-    public int getMovement() {
-        return movementSpeed;
+    public double getMovement() {
+        return velocity;
     }
 
     // Setter
@@ -59,7 +59,11 @@ public class Player {
         this.productInHand = productInHand;
     }
 
-    public void setMovement(int movement) {
-        this.movementSpeed = movement;
+    public void setVelocity(double velocity) {
+        this.velocity = velocity;
+    }
+
+    public double setDiagonalVelocity() {
+        return Math.sqrt(Math.pow(velocity, 2) / 2);
     }
 }

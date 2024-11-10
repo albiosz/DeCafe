@@ -64,7 +64,7 @@ public class Game {
                 // Set the coin score according to what the upgrade cost + change Image and Disable upgrade
                 coinsEarned = playerUpgrade.doUpgrades(coinsEarned);
                 // Increase the movement speed of the Player
-                cofiBrew.setMovement(6);
+                cofiBrew.setVelocity(6);
             }
             default -> throw new GameException("Type of upgrade can not be found");
         }

@@ -46,4 +46,8 @@ public class PressedButtons {
           case D -> d.set(false);
       }
   }
+
+  public boolean isTwoDiagonalButtonsPressed() {
+    return w.get() && a.get() || w.get() && d.get() || s.get() && a.get() || s.get() && d.get();
+  }
 }
