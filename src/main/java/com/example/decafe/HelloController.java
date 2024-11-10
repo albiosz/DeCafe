@@ -5,9 +5,6 @@ import com.example.decafe.assets.ImageAssets;
 import com.example.decafe.exception.ImageNotFoundException;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
-import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -37,12 +34,9 @@ public class HelloController implements Initializable {
 
     // Label that shows the current amount of coins earned
     public Label coinsEarnedLabel;
+    
     // Used for controlling the movement of the Player
-    private BooleanProperty wPressed = new SimpleBooleanProperty();
-    private BooleanProperty aPressed = new SimpleBooleanProperty();
-    private BooleanProperty sPressed = new SimpleBooleanProperty();
-    private BooleanProperty dPressed = new SimpleBooleanProperty();
-    private BooleanBinding keyPressed = wPressed.or(aPressed).or(sPressed).or(dPressed);
+    private PressedButtons pressedButtons = new PressedButtons();
 
     // Images of the Object the Player can interact with
     public ImageView coffeeMachineImageView;
@@ -174,31 +168,19 @@ public class HelloController implements Initializable {
 
     // jump to instructions
     public void switchToInstructions() throws IOException {
-        loadScene("Instructions.fxml");
+        loadScene("instructions.fxml");
     }
 
-    // key events if wasd-keys are pressed
     @FXML
     public void keyPressed(KeyEvent event) {
-        switch (event.getCode()) {
-            case W -> wPressed.set(true);
-            case A -> aPressed.set(true);
-            case S -> sPressed.set(true);
-            case D -> dPressed.set(true);
-        }
+        pressedButtons.keyPressed(event);
     }
 
-    // key events if wasd-keys are released
     @FXML
     public void keyReleased(KeyEvent event) {
-        switch (event.getCode()) {
-            case W -> wPressed.set(false);
-            case A -> aPressed.set(false);
-            case S -> sPressed.set(false);
-            case D -> dPressed.set(false);
-        }
+        pressedButtons.keyReleased(event);
     }
-
+    
     // for smoother motion
     AnimationTimer timer = new AnimationTimer() {
         @Override
@@ -208,8 +190,8 @@ public class HelloController implements Initializable {
             String movement = "none";
 
             // if two keys are pressed at once and player moves diagonally - correct diagonal speed
-            if (wPressed.get() && aPressed.get() || wPressed.get() && dPressed.get() ||
-                    sPressed.get() && aPressed.get() || sPressed.get() && dPressed.get())
+            if (pressedButtons.w.get() && pressedButtons.a.get() || pressedButtons.w.get() && pressedButtons.d.get() ||
+                    pressedButtons.s.get() && pressedButtons.a.get() || pressedButtons.s.get() && pressedButtons.d.get())
                 move -= movementVariable - Math.sqrt(Math.pow(movementVariable, 2) / 2);
 
             // control waiter via wasd keys ([0|0] top-left, [100|100] bottom-right)
@@ -218,25 +200,25 @@ public class HelloController implements Initializable {
             double yMove = 0; // move on y-axis
 
             // if waiter should move up
-            if (wPressed.get()) {
+            if (pressedButtons.w.get()) {
                 yMove = -move; // negative move because otherwise waiter would move down
                 movement = "up";
             }
 
             // if waiter should move down
-            if (sPressed.get()) {
+            if (pressedButtons.s.get()) {
                 yMove = move;
                 movement = "down";
             }
 
             // if waiter should move left
-            if (aPressed.get()) {
+            if (pressedButtons.a.get()) {
                 xMove = -move; // negative move because otherwise waiter would move right
                 movement = "left";
             }
 
             // if waiter should move right
-            if (dPressed.get()) {
+            if (pressedButtons.d.get()) {
                 xMove = move;
                 movement = "right";
             }
@@ -307,13 +289,7 @@ public class HelloController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        keyPressed.addListener((((observableValue, aBoolean, t1) -> { // if any key from the four keys is pressed
-            if (!aBoolean) {
-                timer.start();
-            } else {
-                timer.stop();
-            }
-        })));
+        this.pressedButtons.handleButtonPress(timer);
 
         // transparent labels on top of the images to look for collisions
         collisions = new Label[]{plant, plantsAbove, customerBot1, customerBot2, customerBot3, customerTop1, customerTop2, customerTop3, customerTop4, table1, table2, table3, table4, edgeBot, edgeLeft, edgeRight, edgeTop, countRight, countBelow};
