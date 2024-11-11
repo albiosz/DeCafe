@@ -446,7 +446,7 @@ public class HelloController implements Initializable {
     }
 
     // Method used to display a customer, check if and order was right and set Images for coin ImagesViews
-    public void displayPerson(MouseEvent event) throws IOException {
+    public void displayPerson(MouseEvent event) throws IOException, ImageNotFoundException {
         ImageView customerImageView = (ImageView) event.getSource(); //get the Customer of the clicked Image
         Customer customer = findCustomer(Customer.customersInCoffeeShop, customerImageView); //make new customer object
 

@@ -1,12 +1,14 @@
 package com.example.decafe;
 
+import com.example.decafe.assets.CafeAssets;
 import com.example.decafe.assets.CustomerMode;
-import javafx.scene.image.Image;
+import com.example.decafe.assets.ImageAssets;
+import com.example.decafe.exception.ImageNotFoundException;
+import com.example.decafe.util.ImageUtil;
 import javafx.scene.image.ImageView;
 import javafx.scene.media.AudioClip;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
 
@@ -78,7 +80,7 @@ public class Customer {
     }
 
     public String getRandomOrder() {
-        return (order = new Random().nextBoolean() ? "cake" : "coffee");
+        return new Random().nextBoolean() ? CafeAssets.CAKE.getName() : CafeAssets.COFFEE.getName();
     }
 
     public ImageView getCoinImage() { //returns the image of the coin
@@ -94,12 +96,6 @@ public class Customer {
         Customer.controllerTimer = controllerTimer;
     }
 
-    // Method used to create an Image Object
-    public Image createImage(String filename) throws FileNotFoundException {
-        String path = new File("").getAbsolutePath() + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "com" + File.separator + "example" + File.separator + "decafe" + File.separator + filename;
-        return new Image(new FileInputStream(path));
-    }
-
     //Returns the appropriate image for the customer
     public static ImageView getImage(ImageView customer, ImageView[] searchArray) {
         for (int i = 0; i < customerImages.length; i++) {
@@ -110,10 +106,7 @@ public class Customer {
 
     //Returns the appropriate label for the customer
     public static ImageView getLabel(ImageView customer) {
-        for (int i = 0; i < customerImages.length; i++) {
-            if (customerImages[i].equals(customer)) return orderLabels[i];
-        }
-        return new ImageView();
+        return getImage(customer, orderLabels);
     }
 
     //Returns random customer picture
@@ -130,7 +123,10 @@ public class Customer {
         if (customersInCoffeeShop.size() < 3 && !freeChairs.isEmpty()) {
             ImageView customerImage = getRandomPic();
             customerImage.setVisible(true);
-            Customer customer = new Customer(customerImage, getLabel(customerImage), freeSeatChosen, getImage(customerImage, smileyImages), getImage(customerImage, coinImages));
+            ImageView order = getLabel (customerImage);
+            ImageView smiley  = getImage(customerImage, smileyImages);
+            ImageView coin = getImage(customerImage, coinImages);
+            Customer customer = new Customer(customerImage, order, freeSeatChosen, smiley, coin);
             customersInCoffeeShop.add(customer);
             allCustomers.add(customer);
             playAudio("doorBell.mp3");
@@ -167,7 +163,7 @@ public class Customer {
                     public void run() {
                         try {
                             leave(customer.getImage());
-                        } catch (FileNotFoundException e) {
+                        } catch (FileNotFoundException | ImageNotFoundException e) {
                             e.printStackTrace();
                         }
                         controllerTimer.purge();
@@ -199,40 +195,48 @@ public class Customer {
 
     private void updateSmiley(int seconds) {
         try {
-            String imageName = seconds == 59 ? "smileygreen.png" : seconds == 30 ? "smileyyellow.png" : "smileyred.png";
+            String imageName;
+            if (seconds == 59) {
+                imageName = ImageAssets.CUSTOMER_SMILEY_GREEN.getImage();
+                setMood(CustomerMode.GREEN);
+            } else if (seconds == 30) {
+                imageName = ImageAssets.CUSTOMER_SMILEY_YELLOW.getImage();
+                setMood(CustomerMode.YELLOW);
+            } else {
+                imageName = ImageAssets.CUSTOMER_SMILEY_RED.getImage();
+                setMood(CustomerMode.RED);
+            }
             smiley.setVisible(true);
-            smiley.setImage(createImage(imageName));
-            setMood(seconds == 59 ? CustomerMode.GREEN : seconds == 30 ? CustomerMode.YELLOW : CustomerMode.RED);
-        } catch (FileNotFoundException e) {
+            smiley.setImage(ImageUtil.getImageFromResources(imageName));
+        } catch (ImageNotFoundException e) {
             e.printStackTrace();
         }
     }
 
     //Methode to display order
-    public void displayOrder(ImageView orderlabel) throws FileNotFoundException {
-        this.order = getRandomOrder();
-        setOrder(order);
-        if (order.equals("cake")) {
+    public void displayOrder(ImageView orderlabel) throws ImageNotFoundException {
+        setOrder(getRandomOrder());
+        if (order.equals(CafeAssets.CAKE.getName())) {
             if (chair == 0 || chair == 1 || chair == 4 || chair == 6) {
                 orderlabel.setVisible(true);
-                orderlabel.setImage(createImage("bubbleCakeTopLeft.png"));
+                orderlabel.setImage(ImageUtil.getImageFromResources(ImageAssets.BUBBLE_CAKE_TOP_LEFT.getImage()));
             } else if (chair == 2 || chair == 3) {
                 orderlabel.setVisible(true);
-                orderlabel.setImage(createImage("bubbleCakeTopRight.png"));
+                orderlabel.setImage(ImageUtil.getImageFromResources(ImageAssets.BUBBLE_CAKE_TOP_RIGHT.getImage()));
             } else if (chair == 5) {
                 orderlabel.setVisible(true);
-                orderlabel.setImage(createImage("bubbleCakeBottomRight.png"));
+                orderlabel.setImage(ImageUtil.getImageFromResources(ImageAssets.BUBBLE_CAKE_BOTTOM_RIGHT.getImage()));
             }
-        } else if (order.equals("coffee")) {
+        } else if (order.equals(CafeAssets.COFFEE.getName())) {
             if (chair == 0 || chair == 1 || chair == 4 || chair == 6) {
                 orderlabel.setVisible(true);
-                orderlabel.setImage(createImage("bubbleCoffeeTopLeft.png"));
+                orderlabel.setImage(ImageUtil.getImageFromResources(ImageAssets.BUBBLE_COFFEE_TOP_LEFT.getImage()));
             } else if (chair == 2 || chair == 3) {
                 orderlabel.setVisible(true);
-                orderlabel.setImage(createImage("bubbleCoffeeTopRight.png"));
+                orderlabel.setImage(ImageUtil.getImageFromResources(ImageAssets.BUBBLE_COFFEE_TOP_RIGHT.getImage()));
             } else if (chair == 5) {
                 orderlabel.setVisible(true);
-                orderlabel.setImage(createImage("bubbleCoffeeBottomRight.png"));
+                orderlabel.setImage(ImageUtil.getImageFromResources(ImageAssets.BUBBLE_COFFEE_BOTTOM_RIGHT.getImage()));
             }
         }
         this.alreadyOrdered = true;
@@ -240,15 +244,15 @@ public class Customer {
 
 
     //Methode to check if the order is right or wrong
-    public boolean checkOrder(Player CofiBrew, Customer customer, ImageView waiterImage) throws FileNotFoundException {
-        waiterImage.setImage(createImage(CofiBrew.getFilenameImageWithoutProduct())); //set CofiBrew without order
+    public boolean checkOrder(Player CofiBrew, Customer customer, ImageView waiterImage) throws ImageNotFoundException {
+        waiterImage.setImage(ImageUtil.getImageFromResources(CofiBrew.getFilenameImageWithoutProduct())); //set CofiBrew without order
         if (CofiBrew.getProductInHand().equals(customer.getOrder())) { //if CofiBrew has the right order
-            CofiBrew.setProductInHand("none"); // change product hold by player to none
+            CofiBrew.setProductInHand(CafeAssets.NONE.getName()); // change product hold by player to none
             this.leftUnhappy = false;
             startTimerLeave(this); // start timer to leave the coffee shop (true - it was the right order)
             return true;
         } else {
-            CofiBrew.setProductInHand("none"); // change product hold by player to none
+            CofiBrew.setProductInHand(CafeAssets.NONE.getName()); // change product hold by player to none
             startTimerLeave(this);  // start timer to leave the coffee shop (false - it was the wrong order)
             return false;
         }
@@ -263,15 +267,14 @@ public class Customer {
     }
 
     //Methode for when the customer leaves
-    public void leave(ImageView customerImage) throws FileNotFoundException {
+    public void leave(ImageView customerImage) throws FileNotFoundException, ImageNotFoundException {
         customerImage.setVisible(false);
         customersInCoffeeShop.removeIf(customer -> customer.getImage().equals(customerImage));
         coinImage.setVisible(true);
         coinImage.setDisable(false);
         playAudio(leftUnhappy ? "wrongChoice.mp3" : "rightChoice.mp3");
-
         if (leftUnhappy) {
-            coinImage.setImage(createImage("coin.png"));
+            coinImage.setImage(ImageUtil.getImageFromResources(ImageAssets.COIN.getImage()));
             coinImage.setOnMouseClicked(event -> {
                 try {
                     noMoneySpent(this);
