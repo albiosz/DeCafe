@@ -1,3 +1,10 @@
+# Teammitglieder
+
+- Julien Jungo
+- Mumen Murad
+- Albert Szulc
+- Nils Petsch
+
 # DeCafé
 [![Java CI with Maven](https://github.com/albiosz/DeCafe/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/albiosz/DeCafe/actions/workflows/maven.yml)
 ## How to run the Game
