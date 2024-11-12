@@ -37,42 +37,48 @@ public class Move {
   public void setDirection(PressedButtons pressedButtons) {
     if (pressedButtons.w.get()) {
       direction = UP;
+      return;
     }
 
     // if waiter should move down
     if (pressedButtons.s.get()) {
-        direction = DOWN;
+      direction = DOWN;
+      return;
     }
 
     // if waiter should move left
     if (pressedButtons.a.get()) {
-        direction = LEFT;
+      direction = LEFT;
+      return;
     }
 
     // if waiter should move right
     if (pressedButtons.d.get()) {
-        direction = RIGHT;
+      direction = RIGHT;
     }
   }
 
   public void setVelocity(PressedButtons pressedButtons, double velocity) {
     if (pressedButtons.w.get()) {
       yVelocity = -velocity; // negative move because otherwise waiter would move down
+      return;
     }
 
     // if waiter should move down
     if (pressedButtons.s.get()) {
-        yVelocity = velocity;
+      yVelocity = velocity;
+      return;
     }
 
     // if waiter should move left
     if (pressedButtons.a.get()) {
-        xVelocity = -velocity; // negative move because otherwise waiter would move right
+      xVelocity = -velocity; // negative move because otherwise waiter would move right
+      return;
     }
 
     // if waiter should move right
     if (pressedButtons.d.get()) {
-        xVelocity = velocity;
+      xVelocity = velocity;
     }
   }
 }

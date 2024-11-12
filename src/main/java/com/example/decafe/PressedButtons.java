@@ -16,8 +16,8 @@ public class PressedButtons {
   private BooleanBinding any = w.or(a).or(s).or(d);
 
   public void handleButtonPress(AnimationTimer timer) {
-    any.addListener((observableValue, aBoolean, t1) -> { // if any key from the four keys is pressed
-      if (!aBoolean) {
+    any.addListener((observableValue, isButtonPressed, t1) -> { // if any key from the four keys is pressed
+      if (!isButtonPressed) {
           timer.start();
       } else {
           timer.stop();
@@ -28,26 +28,28 @@ public class PressedButtons {
   // key events if wasd-keys are pressed
   @FXML
   public void keyPressed(KeyEvent event) {
-      switch (event.getCode()) {
-          case W -> w.set(true);
-          case A -> a.set(true);
-          case S -> s.set(true);
-          case D -> d.set(true);
-      }
+    changeButtonState(event, true);
   }
 
   // key events if wasd-keys are released
   @FXML
   public void keyReleased(KeyEvent event) {
-      switch (event.getCode()) {
-          case W -> w.set(false);
-          case A -> a.set(false);
-          case S -> s.set(false);
-          case D -> d.set(false);
-      }
+    changeButtonState(event, false);
+  } 
+
+  private void changeButtonState(KeyEvent event, boolean newState) {
+    switch (event.getCode()) {
+      case W -> w.set(newState);
+      case A -> a.set(newState);
+      case S -> s.set(newState);
+      case D -> d.set(newState);
+    }
   }
 
   public boolean isTwoDiagonalButtonsPressed() {
-    return w.get() && a.get() || w.get() && d.get() || s.get() && a.get() || s.get() && d.get();
+    return w.get() && a.get()
+      || w.get() && d.get() 
+      || s.get() && a.get() 
+      || s.get() && d.get();
   }
 }

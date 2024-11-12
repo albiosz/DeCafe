@@ -1,14 +1,19 @@
 package com.example.decafe.sprites;
 
-import java.io.FileNotFoundException;
-
-import com.example.decafe.Player;
+import com.example.decafe.exception.ImageNotFoundException;
 import com.example.decafe.util.ImageUtil; 
 
 import javafx.scene.image.ImageView;
 
 public class Waiter {
-  public ImageView waiterImageView;
+
+  private static class Product {
+    public static final String COFFEE = "coffee"; 
+    public static final String CAKE = "cake"; 
+    public static final String NONE = "none"; 
+  }
+
+  private final ImageView waiterImageView;
 
   public Waiter(ImageView waiterImageView) {
     this.waiterImageView = waiterImageView;
@@ -35,67 +40,30 @@ public class Waiter {
     move(-stepX, -stepY);
   }
 
-  public void pointUp(String productInHand) throws FileNotFoundException {
+  private void setImageBasedOnProduct(String direction, String productInHand) throws ImageNotFoundException {
+    String imageName;
     switch (productInHand) {
-      case "none":
-        waiterImageView.setImage(ImageUtil.create("CofiBrewUp.png"));
-        return;
-      case "cake":
-        waiterImageView.setImage(ImageUtil.create("CofiBrewCakeUp.png"));
-        return;
-      case "coffee":
-        waiterImageView.setImage(ImageUtil.create("CofiBrewCoffeeUp.png"));
-        return;
-      default:
-      waiterImageView.setImage(ImageUtil.create("CofiBrewUp.png"));
+        case Product.NONE -> imageName = "CofiBrew" + direction + ".png";
+        case Product.CAKE -> imageName = "CofiBrewCake" + direction + ".png";
+        case Product.COFFEE -> imageName = "CofiBrewCoffee" + direction + ".png";
+        default -> imageName = "CofiBrew" + direction + ".png";
     }
-  }
-
-  public void pointDown(String productInHand) throws FileNotFoundException {
-    switch (productInHand) {
-      case "none":
-        waiterImageView.setImage(ImageUtil.create("CofiBrewDown.png"));
-        return;
-      case "cake":
-        waiterImageView.setImage(ImageUtil.create("CofiBrewCakeDown.png"));
-        return;
-      case "coffee":
-        waiterImageView.setImage(ImageUtil.create("CofiBrewCoffeeDown.png"));
-        return;
-      default:
-        waiterImageView.setImage(ImageUtil.create("CofiBrewDown.png"));
-    }
-  }
-
-  public void pointLeft(String productInHand) throws FileNotFoundException {
-    switch (productInHand) {
-      case "none":
-        waiterImageView.setImage(ImageUtil.create("CofiBrewLeft.png"));
-        return;
-      case "cake":
-        waiterImageView.setImage(ImageUtil.create("CofiBrewCakeLeft.png"));
-        return;
-      case "coffee":
-        waiterImageView.setImage(ImageUtil.create("CofiBrewCoffeeLeft.png"));
-        return;
-      default:
-        waiterImageView.setImage(ImageUtil.create("CofiBrewLeft.png"));
-    }
+    waiterImageView.setImage(ImageUtil.getImageFromResources(imageName));
 }
 
-  public void pointRight(String productInHand) throws FileNotFoundException {
-    switch (productInHand) {
-      case "none":
-        waiterImageView.setImage(ImageUtil.create("CofiBrewRight.png"));
-        return;
-      case "cake":
-        waiterImageView.setImage(ImageUtil.create("CofiBrewCakeRight.png"));
-        return;
-      case "coffee":
-        waiterImageView.setImage(ImageUtil.create("CofiBrewCoffeeRight.png"));
-        return;
-      default:
-        waiterImageView.setImage(ImageUtil.create("CofiBrewRight.png"));
-    }
+  public void pointUp(String productInHand) throws ImageNotFoundException {
+    setImageBasedOnProduct("Up", productInHand);
+  }
+
+  public void pointDown(String productInHand) throws ImageNotFoundException {
+    setImageBasedOnProduct("Down", productInHand);
+  }
+
+  public void pointLeft(String productInHand) throws ImageNotFoundException {
+    setImageBasedOnProduct("Left", productInHand);
+  }
+
+  public void pointRight(String productInHand) throws ImageNotFoundException {
+    setImageBasedOnProduct("Right", productInHand);
   }
 }
